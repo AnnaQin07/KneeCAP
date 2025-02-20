@@ -1,0 +1,66 @@
+datasets:
+  test:
+    type: png
+    img_dir: "E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/10_Aug/assessment/images" # unrelate to images we want,but it doesn't matter
+    coordi_save_dir: "E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/merged/metas"
+    ld_mask_dir: None
+    hd_mask_dir: None
+    ld_sdm_dir: None
+    mode: inf
+
+model:
+  backbone:
+    type: asymmetric_unet
+    in_channels: 1
+    in_features: [32, 64, 128, 256, 512]
+    out_features: [512, 256, 128, 64]
+  head:
+    render_head:
+      in_channels: 64
+      num_classes: 3 # tibia, femur background
+      up_ratio: 2
+      over_sampling_rate: 3
+      ratio_importance: 0.75
+    sdf_head:
+      pos_embd_channel: 8
+      pos_embd_temp: 2.7
+      ratio: [1024, 128] # hw ratio of input feature maps
+      mlp_channels: [32, 16]
+
+loss:
+  items: ['dice', 'mse', 'ce']
+  weights: [1., 1., 1.]
+  # args of dice
+  smooth: 1.0e-8
+
+optimizer:
+  name: Adam
+  lr: 3.0e-3
+  weight_decay: 0
+
+scheduler:
+  name: ReduceLROnPlateau
+  mode: min
+  factor: 0.5
+  patience: 5
+
+evaluation_metric: psnr
+
+postprocess:
+  rsz_width: 512
+  plateau_peak_neigbor: 8
+  ankle_neigbor: 24
+
+visualisation:
+  raw_img_dir: E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/merged/jpg
+  gt_hka_path: E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/HKA_labels.json
+  gt_ahka_path: E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/aHKA_labels.json
+  seg_only: False
+
+evaluation: 
+  gt_paths:
+    hka: "E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/HKA_labels.json"
+    LDFA: "E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/LDFA_labels.json"
+    MPTA: "E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/MPTA_labels.json"
+    MPTA-LDFA: "E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/aHKA_labels.json"
+  img_type_path: "E:/ANU/24s2/8715/DATA/dataset/Canberra_hospital/type_label.json"

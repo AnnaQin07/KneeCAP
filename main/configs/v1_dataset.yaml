@@ -1,0 +1,68 @@
+datasets:
+  train:
+    type: png
+    img_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/train/images" # "data/split/train/images"
+    coordi_save_dir:  "data/split/train/metas"
+    ld_mask_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/train/masks_small" # "data/split/train/ld_masks"
+    hd_mask_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/train/masks" # "data/split/train/hd_masks"
+    ld_sdm_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/train/sdm" # "data/split/train/sdm"
+    mode: train
+    random_split: False
+    val_ratio: 0.2
+    shuffle: True
+  test:
+    type: png
+    img_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/test/images" # "data/split/test/images"
+    coordi_save_dir: "data/split/test/metas"
+    ld_mask_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/test/masks_small" # "data/split/test/ld_masks"
+    hd_mask_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/test/masks" # "data/split/test/hd_masks"
+    ld_sdm_dir: "D:/Datasets/comp8603/Lower_limb_Xrays/v1/test/sdm" # "data/split/test/sdm"
+    mode: test
+
+model:
+  backbone:
+    type: asymmetric_unet
+    in_channels: 1
+    in_features: [32, 64, 128, 256, 512]
+    out_features: [512, 256, 128, 64]
+  head:
+    render_head:
+      in_channels: 64
+      num_classes: 3 # tibia, femur background
+      up_ratio: 2
+      over_sampling_rate: 3
+      ratio_importance: 0.75
+    sdf_head:
+      pos_embd_channel: 8
+      pos_embd_temp: 2.7
+      ratio: [1024, 128] # hw ratio of input feature maps
+      mlp_channels: [32, 16]
+  # freeze_strategy: 'encoder'
+
+     
+
+loss:
+  items: ['dice', 'mse', 'ce']
+  weights: [1., 1., 1.]
+  # args of dice
+  smooth: 1.0e-8
+
+optimizer:
+  name: Adam
+  lr: 3.0e-3
+  weight_decay: 0
+
+scheduler:
+  name: ReduceLROnPlateau
+  mode: min
+  factor: 0.5
+  patience: 5
+
+evaluation_metric: psnr
+
+postprocess:
+  rsz_width: 512
+  plateau_peak_neigbor: 8
+  ankle_neigbor: 24
+
+  

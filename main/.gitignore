@@ -1,0 +1,6 @@
+experiments/
+data/minimc/
+data/split/
+log/
+default.pth
+
